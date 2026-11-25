@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTech Solutions - Dashboard Executivo de KPIs</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        agro: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                            950: '#052e16',
+                        },
+                        earth: '#854d0e',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilização de scrollbar suave */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="h-full font-sans text-slate-800 antialiased flex flex-col md:flex-row overflow-x-hidden">
+
+    <!-- SIDEBAR DE NAVEGAÇÃO -->
+    <aside class="w-full md:w-64 bg-agro-950 text-white flex-shrink-0 flex flex-col justify-between shadow-xl z-20">
+        <div>
+            <!-- Header Brand -->
+            <div class="p-6 border-b border-agro-800/50 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-agro-500 to-agro-700 flex items-center justify-center text-white shadow-lg shadow-agro-900/50 font-bold text-xl">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-wide text-white">AgroTech</h1>
+                    <p class="text-xs text-agro-100 font-medium tracking-wider uppercase">Solutions BI</p>
+                </div>
+            </div>
+
+            <!-- Navegação principal -->
+            <nav class="p-4 space-y-1">
+                <a href="#visao-geral" onclick="showTab('visao-geral')" id="nav-visao-geral" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-agro-800/80 text-white shadow-sm">
+                    <i class="fa-solid fa-chart-pie text-agro-100 w-5"></i> Visão Geral
+                </a>
+                <a href="#estoque" onclick="showTab('estoque')" id="nav-estoque" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-agro-900 hover:text-white transition-all">
+                    <i class="fa-solid fa-boxes-stacked text-agro-100 w-5"></i> Disponibilidade & Estoque
+                </a>
+                <a href="#financeiro" onclick="showTab('financeiro')" id="nav-financeiro" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-agro-900 hover:text-white transition-all">
+                    <i class="fa-solid fa-sack-dollar text-agro-100 w-5"></i> Análise Financeira
+                </a>
+                <a href="#regioes" onclick="showTab('regioes')" id="nav-regioes" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-300 hover:bg-agro-900 hover:text-white transition-all">
+                    <i class="fa-solid fa-truck-ramp-box text-agro-100 w-5"></i> Fornecedores & Regiões
+                </a>
+                <a href="#diretoria" onclick="showTab('diretoria')" id="nav-diretoria" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-amber-300 hover:bg-agro-900 hover:text-amber-200 transition-all border border-amber-500/20 bg-amber-500/10">
+                    <i class="fa-solid fa-award text-amber-400 w-5"></i> Resumo Diretoria
+                </a>
+            </nav>
+        </div>
+
+        <!-- Rodapé Sidebar -->
+        <div class="p-4 border-t border-agro-800/50">
+            <div class="bg-agro-900/80 p-3 rounded-xl border border-agro-800 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-agro-700 flex items-center justify-center text-white text-xs font-bold">
+                    AN
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-semibold text-white truncate">Aninha BI System</p>
+                    <p class="text-[10px] text-slate-400 truncate">Base: agropecuaria_db</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-1 flex flex-col h-full overflow-y-auto bg-slate-50">
+        
+        <!-- HEADER TOPBAR COM FILTROS -->
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-10 px-6 py-4 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800" id="page-title">Painel Executivo de Indicadores</h2>
+                <p class="text-xs text-slate-500">Auditoria pós-limpeza de dados | 72 Registros Validados</p>
+            </div>
+
+            <!-- Filtros Globais Dinâmicos -->
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                    <i class="fa-solid fa-filter text-slate-400 text-xs"></i>
+                    <label for="filter-categoria" class="text-xs font-medium text-slate-600">Categoria:</label>
+                    <select id="filter-categoria" onchange="applyFilters()" class="bg-transparent text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer">
+                        <option value="TODAS">Todas as Categorias</option>
+                        <option value="Grãos">Grãos</option>
+                        <option value="Rações">Rações</option>
+                        <option value="Fertilizantes">Fertilizantes</option>
+                        <option value="Defensivos">Defensivos</option>
+                        <option value="Minerais">Minerais</option>
+                        <option value="Sementes">Sementes</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                    <i class="fa-solid fa-location-dot text-slate-400 text-xs"></i>
+                    <label for="filter-estado" class="text-xs font-medium text-slate-600">Estado:</label>
+                    <select id="filter-estado" onchange="applyFilters()" class="bg-transparent text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer">
+                        <option value="TODOS">Todos os Estados</option>
+                        <option value="PR">PR</option>
+                        <option value="MT">MT</option>
+                        <option value="GO">GO</option>
+                        <option value="MS">MS</option>
+                        <option value="RS">RS</option>
+                        <option value="SC">SC</option>
+                        <option value="SP">SP</option>
+                        <option value="MG">MG</option>
+                    </select>
+                </div>
+
+                <button onclick="resetFilters()" class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-agro-700 hover:bg-agro-50 rounded-lg transition-colors border border-slate-200">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Limpar
+                </button>
+            </div>
+        </header>
+
+        <!-- DASHBOARD CONTAINER -->
+        <div class="p-6 space-y-6">
+
+            <!-- CARDS DE MÉTRICAS EXECUTIVAS DE TOPO -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <!-- Card 1: Total Registros -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute right-3 top-3 w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-database text-lg"></i>
+                    </div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Base de Dados Tratada</p>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-1" id="kpi-card-total">72</h3>
+                    <p class="text-xs text-emerald-600 font-medium mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-check-circle"></i> 100% Auditada e Consolidada
+                    </p>
+                </div>
+
+                <!-- Card 2: Disponibilidade -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute right-3 top-3 w-10 h-10 bg-agro-50 rounded-xl flex items-center justify-center text-agro-600 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-circle-check text-lg"></i>
+                    </div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Taxa de Disponibilidade</p>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-1" id="kpi-card-disp">76.39%</h3>
+                    <div class="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
+                        <div id="kpi-card-disp-bar" class="bg-agro-600 h-full rounded-full" style="width: 76.39%"></div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Valor Potencial Disponível -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute right-3 top-3 w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-coins text-lg"></i>
+                    </div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Valor Potencial Liberado</p>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-1" id="kpi-card-valor">R$ 1.844.757,90</h3>
+                    <p class="text-xs text-blue-600 font-medium mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-box font-normal"></i> <span id="kpi-card-unidades">8.175</span> unidades liberadas
+                    </p>
+                </div>
+
+                <!-- Card 4: Cobertura Geográfica -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute right-3 top-3 w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-map-location-dot text-lg"></i>
+                    </div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Presença Regional</p>
+                    <h3 class="text-2xl font-bold text-slate-800 mt-1" id="kpi-card-estados">8 Estados</h3>
+                    <p class="text-xs text-amber-600 font-medium mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-chart-line"></i> Liderança em MT e PR
+                    </p>
+                </div>
+            </div>
+
+            <!-- SEÇÃO ABA: VISÃO GERAL -->
+            <div id="tab-visao-geral" class="tab-content space-y-6">
+                
+                <!-- Grid Principal de Gráficos -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Chart 1: Donut Taxa de Disponibilidade (KPI 01) -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm">Disponibilidade Comercial</h4>
+                                <p class="text-xs text-slate-500">KPI 01 - Registros em Estoque</p>
+                            </div>
+                            <button onclick="openKpiModal(1)" class="text-slate-400 hover:text-agro-700 text-xs px-2 py-1 rounded bg-slate-100 hover:bg-agro-50">
+                                <i class="fa-solid fa-circle-info"></i> Info
+                            </button>
+                        </div>
+                        <div class="relative flex items-center justify-center h-52">
+                            <canvas id="chartDisponibilidade"></canvas>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 text-center">
+                            <div>
+                                <span class="text-xs text-slate-500 block">Disponíveis</span>
+                                <span class="font-bold text-agro-600 text-base" id="val-disp-qtd">55 (76.4%)</span>
+                            </div>
+                            <div class="border-l border-slate-100">
+                                <span class="text-xs text-slate-500 block">Indisponíveis</span>
+                                <span class="font-bold text-rose-500 text-base" id="val-indisp-qtd">17 (23.6%)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Bars Financeiro por Categoria (KPI 06) -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2 flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm">Concentração de Valor por Categoria (R$)</h4>
+                                <p class="text-xs text-slate-500">KPI 06 - Valor Potencial Total Cadastrado</p>
+                            </div>
+                            <button onclick="openKpiModal(6)" class="text-slate-400 hover:text-agro-700 text-xs px-2 py-1 rounded bg-slate-100 hover:bg-agro-50">
+                                <i class="fa-solid fa-circle-info"></i> Info
+                            </button>
+                        </div>
+                        <div class="h-56 relative">
+                            <canvas id="chartValorCategoria"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid Secundário -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- Chart 3: Unidades por Estado (KPI 04) -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm">Distribuição de Unidades Disponíveis por Estado</h4>
+                                <p class="text-xs text-slate-500">KPI 04 - Concentração Logística Regional</p>
+                            </div>
+                            <button onclick="openKpiModal(4)" class="text-slate-400 hover:text-agro-700 text-xs px-2 py-1 rounded bg-slate-100 hover:bg-agro-50">
+                                <i class="fa-solid fa-circle-info"></i> Info
+                            </button>
+                        </div>
+                        <div class="h-60 relative">
+                            <canvas id="chartUnidadesEstado"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 4: Concentração Top 3 Fornecedores (KPI 07) -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm">Concentração dos Top 3 Fornecedores</h4>
+                                <p class="text-xs text-slate-500">KPI 07 - Campo Verde, NutriCampo e AgroSul</p>
+                            </div>
+                            <button onclick="openKpiModal(7)" class="text-slate-400 hover:text-agro-700 text-xs px-2 py-1 rounded bg-slate-100 hover:bg-agro-50">
+                                <i class="fa-solid fa-circle-info"></i> Info
+                            </button>
+                        </div>
+                        <div class="h-52 relative flex items-center justify-center">
+                            <canvas id="chartTopFornecedores"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-500 text-center mt-2 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                            <strong>68,06%</strong> dos registros da base estão concentrados em apenas 3 parceiros comerciais.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SEÇÃO ABA: DISPONIBILIDADE & ESTOQUE -->
+            <div id="tab-estoque" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- KPI 02: Indisponibilidade por Categoria -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm">Taxa de Indisponibilidade por Categoria (%)</h4>
+                                <p class="text-xs text-slate-500">KPI 02 - Análise de Ruptura de Estoque</p>
+                            </div>
+                            <button onclick="openKpiModal(2)" class="text-slate-400 hover:text-agro-700 text-xs px-2 py-1 rounded bg-slate-100">
+                                <i class="fa-solid fa-circle-info"></i> Info
+                            </button>
+                        </div>
+                        <div class="h-64 relative">
+                            <canvas id="chartIndisponibilidadeCategoria"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- KPI 09: Registros de Alto Volume -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-bold text-slate-800 text-sm">Registros de Alto Volume (>200 un)</h4>
+                                <button onclick="openKpiModal(9)" class="text-slate-400 hover:text-agro-700 text-xs px-2 py-1 rounded bg-slate-100">
+                                    <i class="fa-solid fa-circle-info"></i> Info
+                                </button>
+                            </div>
+                            <p class="text-xs text-slate-500 mb-4">KPI 09 - Concentração de volume estocado em grandes lotes.</p>
+
+                            <div class="space-y-4">
+                                <div class="bg-agro-50 p-4 rounded-xl border border-agro-100">
+                                    <span class="text-xs text-agro-800 font-medium block">Participação em Registros</span>
+                                    <div class="flex items-baseline gap-2 mt-1">
+                                        <span class="text-2xl font-bold text-agro-900">19,44%</span>
+                                        <span class="text-xs text-agro-700">(14 de 72 registros)</span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                    <span class="text-xs text-emerald-800 font-medium block">Participação no Volume Total</span>
+                                    <div class="flex items-baseline gap-2 mt-1">
+                                        <span class="text-2xl font-bold text-emerald-900">41,89%</span>
+                                        <span class="text-xs text-emerald-700">(3.960 de 9.453 un)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="text-[11px] text-slate-500 mt-4 leading-snug">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>
+                            Apenas 14 registros respondem por mais de 41% de todo o estoque físico estocado.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SEÇÃO ABA: ANÁLISE FINANCEIRA -->
+            <div id="tab-financeiro" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Card KPI 05 -->
+                    <div class="bg-gradient-to-br from-agro-900 to-agro-950 text-white p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs uppercase tracking-wider text-agro-200 font-medium">KPI 05 - Valor Potencial Disponível</span>
+                                <button onclick="openKpiModal(5)" class="text-agro-200 hover:text-white text-xs px-2 py-1 rounded bg-agro-800/50">
+                                    <i class="fa-solid fa-circle-info"></i> Info
+                                </button>
+                            </div>
+                            <p class="text-3xl font-extrabold text-white mt-2">R$ 1.844.757,90</p>
+                            <p class="text-xs text-agro-200 mt-2 leading-relaxed">
+                                Representa o valor potencial total dos 55 registros com <code class="bg-agro-800 px-1 py-0.5 rounded text-white">estoque = true</code>.
+                            </p>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-agro-800 text-xs text-agro-300">
+                            <i class="fa-solid fa-shield-halved mr-1 text-emerald-400"></i> Garantia de estoque ativo liberado para faturamento imediato.
+                        </div>
+                    </div>
+
+                    <!-- KPI 08: Índice de Preço Médio por Fornecedor -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm">Índice de Preço Médio por Fornecedor (Base 100 = R$ 286,83)</h4>
+                                <p class="text-xs text-slate-500">KPI 08 - Posicionamento de Ticket Médio do Portfólio</p>
+                            </div>
+                            <button onclick="openKpiModal(8)" class="text-slate-400 hover:text-agro-700 text-xs px-2 py-1 rounded bg-slate-100">
+                                <i class="fa-solid fa-circle-info"></i> Info
+                            </button>
+                        </div>
+                        <div class="h-64 relative">
+                            <canvas id="chartIndicePreco"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SEÇÃO ABA: FORNECEDORES & REGIÕES -->
+            <div id="tab-regioes" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- KPI 10: Cobertura Geográfica por Categoria -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm">Cobertura Geográfica por Categoria (%)</h4>
+                                <p class="text-xs text-slate-500">KPI 10 - Capilaridade em relação aos 8 Estados da Base</p>
+                            </div>
+                            <button onclick="openKpiModal(10)" class="text-slate-400 hover:text-agro-700 text-xs px-2 py-1 rounded bg-slate-100">
+                                <i class="fa-solid fa-circle-info"></i> Info
+                            </button>
+                        </div>
+                        <div class="h-64 relative">
+                            <canvas id="chartCoberturaGeo"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Resumo Fornecedores -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm mb-1">Visão Geral da Rede de Fornecedores</h4>
+                            <p class="text-xs text-slate-500 mb-4">Participação no total de 72 registros auditados</p>
+                            
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                    <span class="text-xs font-semibold text-slate-700">Campo Verde</span>
+                                    <span class="text-xs font-bold text-agro-700">17 registros (23,61%)</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                    <span class="text-xs font-semibold text-slate-700">NutriCampo</span>
+                                    <span class="text-xs font-bold text-agro-700">16 registros (22,22%)</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                    <span class="text-xs font-semibold text-slate-700">AgroSul</span>
+                                    <span class="text-xs font-bold text-agro-700">16 registros (22,22%)</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                    <span class="text-xs font-semibold text-slate-700">Solo Forte</span>
+                                    <span class="text-xs font-bold text-slate-600">12 registros (16,67%)</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                                    <span class="text-xs font-semibold text-slate-700">BioPlant</span>
+                                    <span class="text-xs font-bold text-slate-600">11 registros (15,28%)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SEÇÃO ABA: RESUMO DIRETORIA (CONCLUSÃO GERENCIAL) -->
+            <div id="tab-diretoria" class="tab-content hidden space-y-6">
+                
+                <!-- Hero Header da Diretoria -->
+                <div class="bg-gradient-to-r from-agro-950 via-agro-900 to-agro-800 text-white p-8 rounded-3xl shadow-xl border border-agro-700 relative overflow-hidden">
+                    <div class="relative z-10 max-w-3xl">
+                        <span class="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-xs font-semibold uppercase tracking-wider">
+                            Relatório Executivo Final
+                        </span>
+                        <h3 class="text-2xl md:text-3xl font-extrabold mt-3 leading-tight">
+                            Síntese de Decisões Estratégicas da Diretoria
+                        </h3>
+                        <p class="text-slate-300 text-sm mt-2 leading-relaxed">
+                            Com base nos 10 KPIs calculados sobre a base de dados tratada da AgroTech Solutions, destacam-se as três decisões prioritárias para mitigação de riscos e ganho de eficiência operacional.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Os 3 KPIs Prioritários Escolhidos -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <!-- Prioridade 1 -->
+                    <div class="bg-white p-6 rounded-2xl border-2 border-rose-200 shadow-sm hover:shadow-md transition-all relative flex flex-col justify-between">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-lg mb-4">
+                                01
+                            </div>
+                            <span class="text-[10px] font-bold text-rose-600 uppercase tracking-wider bg-rose-50 px-2 py-0.5 rounded">
+                                Gestão de Risco & Margem
+                            </span>
+                            <h4 class="font-bold text-slate-800 text-base mt-2">Bloqueio de Defensivos de Alto Valor</h4>
+                            <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                **Baseado nos KPIs 02 e 05 / Questão 10:** Defensivos com valor unitário > R$ 800,00 foram atualizados com <code class="bg-slate-100 px-1 py-0.5 rounded text-rose-700 font-mono">estoque = false</code>. 
+                            </p>
+                            <div class="mt-4 p-3 bg-rose-50/50 rounded-xl border border-rose-100 text-xs text-slate-700">
+                                <strong>Decisão:</strong> Manter a trava de liberação comercial para reavaliação de crédito e margem de seguros antes da liberação em lote.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Prioridade 2 -->
+                    <div class="bg-white p-6 rounded-2xl border-2 border-agro-200 shadow-sm hover:shadow-md transition-all relative flex flex-col justify-between">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-agro-100 text-agro-700 flex items-center justify-center font-bold text-lg mb-4">
+                                02
+                            </div>
+                            <span class="text-[10px] font-bold text-agro-700 uppercase tracking-wider bg-agro-50 px-2 py-0.5 rounded">
+                                Eficiência Logística
+                            </span>
+                            <h4 class="font-bold text-slate-800 text-base mt-2">Concentração do Volume em MT e PR</h4>
+                            <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                **Baseado no KPI 04:** Mato Grosso (22,63%) e Paraná (20,67%) concentram sozinhos **43,30%** de todas as unidades disponíveis em estoque.
+                            </p>
+                            <div class="mt-4 p-3 bg-agro-50/50 rounded-xl border border-agro-100 text-xs text-slate-700">
+                                <strong>Decisão:</strong> Priorizar hubs de distribuição e contratos de frete dedicado nestes dois estados centrais para reduzir a rotatividade de frete.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Prioridade 3 -->
+                    <div class="bg-white p-6 rounded-2xl border-2 border-amber-200 shadow-sm hover:shadow-md transition-all relative flex flex-col justify-between">
+                        <div>
+                            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-lg mb-4">
+                                03
+                            </div>
+                            <span class="text-[10px] font-bold text-amber-700 uppercase tracking-wider bg-amber-50 px-2 py-0.5 rounded">
+                                Governança de Suprimentos
+                            </span>
+                            <h4 class="font-bold text-slate-800 text-base mt-2">Dependência dos 3 Maiores Fornecedores</h4>
+                            <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                                **Baseado nos KPIs 07 e 08:** Campo Verde, NutriCampo e AgroSul detêm **68,06%** da base de produtos, com tickets médios discrepantes.
+                            </p>
+                            <div class="mt-4 p-3 bg-amber-50/50 rounded-xl border border-amber-100 text-xs text-slate-700">
+                                <strong>Decisão:</strong> Desenvolver fornecedores regionais secundários para itens de alto volume e negociar tabelas progressivas de volume.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- TABELA DE DADOS INTERATIVA E BUSCA -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-base">Base de Dados Auditada (<span id="table-count">72</span> registros)</h4>
+                        <p class="text-xs text-slate-500">Tabela de registros resultantes da Limpeza e Tratamento (Parte 1)</p>
+                    </div>
+
+                    <div class="relative w-full sm:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="table-search" onkeyup="filterTable()" placeholder="Buscar produto, fornecedor..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-agro-600 transition-colors">
+                    </div>
+                </div>
+
+                <!-- Tabela -->
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">ID</th>
+                                <th class="p-3">Produto</th>
+                                <th class="p-3">Categoria</th>
+                                <th class="p-3">Fornecedor</th>
+                                <th class="p-3">Estado</th>
+                                <th class="p-3 text-right">Qtd (Un)</th>
+                                <th class="p-3 text-right">Val. Unit (R$)</th>
+                                <th class="p-3 text-center">Data Venda</th>
+                                <th class="p-3 text-center">Estoque</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-100 text-slate-700">
+                            <!-- Preenchido via JavaScript com dados fiéis ao script -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL DE INTERPRETAÇÃO GERENCIAL DOS KPIs -->
+    <div id="kpi-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-4 relative">
+            <button onclick="closeKpiModal()" class="absolute right-5 top-5 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-agro-100 text-agro-700 flex items-center justify-center font-bold" id="modal-kpi-num">
+                    KPI
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-base" id="modal-kpi-title">Título do KPI</h3>
+                    <p class="text-xs text-slate-500" id="modal-kpi-subtitle">Subtítulo do KPI</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-xs text-slate-700 border-t border-b border-slate-100 py-4">
+                <div>
+                    <strong class="text-slate-900 block font-semibold mb-0.5">Objetivo Gerencial:</strong>
+                    <p id="modal-kpi-objective" class="text-slate-600 leading-relaxed"></p>
+                </div>
+                <div>
+                    <strong class="text-slate-900 block font-semibold mb-0.5">Regra de Cálculo:</strong>
+                    <p id="modal-kpi-formula" class="font-mono bg-slate-50 p-2 rounded border border-slate-200 text-slate-800"></p>
+                </div>
+                <div>
+                    <strong class="text-slate-900 block font-semibold mb-0.5">Interpretação & Decisão Apoiada:</strong>
+                    <p id="modal-kpi-interpretation" class="text-slate-600 leading-relaxed"></p>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button onclick="closeKpiModal()" class="px-4 py-2 bg-agro-700 hover:bg-agro-800 text-white font-medium text-xs rounded-xl transition-colors">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT: LÓGICA DE DADOS, CHARTS E INTERATIVIDADE -->
+    <script>
+        // Data Store dos 72 Registros Auditados do Script SQL
+        const rawData = [
+            {id:1, produto:'Milho Safrinha', categoria:'Grãos', fornecedor:'AgroSul', estado:'PR', quantidade:120, valor:89.90, data:'2025-01-10', estoque:true},
+            {id:2, produto:'Soja Premium', categoria:'Grãos', fornecedor:'Campo Verde', estado:'MT', quantidade:200, valor:145.50, data:'2025-01-15', estoque:true},
+            {id:3, produto:'Ração Bovina 25kg', categoria:'Rações', fornecedor:'NutriCampo', estado:'SC', quantidade:80, valor:110.00, data:'2025-01-18', estoque:true},
+            {id:4, produto:'Fertilizante NPK', categoria:'Fertilizantes', fornecedor:'AgroMax', estado:'GO', quantidade:50, valor:320.75, data:'2025-01-22', estoque:false},
+            {id:5, produto:'Herbicida ForteMax', categoria:'Defensivos', fornecedor:'BioPlant', estado:'MS', quantidade:30, valor:450.00, data:'2025-01-25', estoque:true},
+            {id:6, produto:'Calcário Agrícola', categoria:'Minerais', fornecedor:'Solo Forte', estado:'PR', quantidade:300, valor:45.90, data:'2025-01-27', estoque:true},
+            {id:7, produto:'Semente de Trigo', categoria:'Sementes', fornecedor:'AgroSul', estado:'RS', quantidade:90, valor:99.99, data:'2025-02-01', estoque:false},
+            {id:8, produto:'Inseticida Power', categoria:'Defensivos', fornecedor:'Campo Verde', estado:'MT', quantidade:25, valor:599.00, data:'2025-02-03', estoque:true},
+            {id:9, produto:'Farelo de Soja', categoria:'Rações', fornecedor:'NutriCampo', estado:'SC', quantidade:110, valor:76.50, data:'2025-02-05', estoque:true},
+            {id:10, produto:'Adubo Orgânico', categoria:'Fertilizantes', fornecedor:'BioPlant', estado:'SP', quantidade:60, valor:180.00, data:'2025-02-08', estoque:true},
+            {id:11, produto:'Milheto', categoria:'Sementes', fornecedor:'AgroSul', estado:'GO', quantidade:70, valor:88.80, data:'2025-02-10', estoque:false},
+            {id:12, produto:'Sal Mineral Bovino', categoria:'Minerais', fornecedor:'NutriCampo', estado:'MG', quantidade:95, valor:67.40, data:'2025-02-12', estoque:true},
+            {id:13, produto:'Soja Convencional', categoria:'Grãos', fornecedor:'Campo Verde', estado:'MT', quantidade:180, valor:139.00, data:'2025-02-15', estoque:true},
+            {id:14, produto:'Ração Suína 20kg', categoria:'Rações', fornecedor:'NutriCampo', estado:'SC', quantidade:55, valor:98.00, data:'2025-02-17', estoque:false},
+            {id:15, produto:'Fungicida Max', categoria:'Defensivos', fornecedor:'AgroMax', estado:'PR', quantidade:22, valor:799.90, data:'2025-02-20', estoque:true},
+            {id:16, produto:'Semente de Aveia', categoria:'Sementes', fornecedor:'AgroSul', estado:'RS', quantidade:65, valor:72.30, data:'2025-02-22', estoque:true},
+            {id:17, produto:'Ureia Agrícola', categoria:'Fertilizantes', fornecedor:'Solo Forte', estado:'GO', quantidade:140, valor:210.00, data:'2025-02-25', estoque:true},
+            {id:18, produto:'Milho Híbrido', categoria:'Grãos', fornecedor:'Campo Verde', estado:'MS', quantidade:210, valor:155.90, data:'2025-03-01', estoque:false},
+            {id:19, produto:'Ração Equina', categoria:'Rações', fornecedor:'NutriCampo', estado:'SP', quantidade:40, valor:132.75, data:'2025-03-04', estoque:true},
+            {id:20, produto:'Herbicida Select', categoria:'Defensivos', fornecedor:'BioPlant', estado:'MT', quantidade:28, valor:499.90, data:'2025-03-06', estoque:true},
+            {id:21, produto:'Calcário Premium', categoria:'Minerais', fornecedor:'Solo Forte', estado:'PR', quantidade:310, valor:55.50, data:'2025-03-08', estoque:true},
+            {id:22, produto:'Semente de Pastagem', categoria:'Sementes', fornecedor:'AgroSul', estado:'GO', quantidade:85, valor:120.00, data:'2025-03-10', estoque:false},
+            {id:23, produto:'Soja Exportação', categoria:'Grãos', fornecedor:'Campo Verde', estado:'MT', quantidade:260, valor:160.00, data:'2025-03-12', estoque:true},
+            {id:24, produto:'Fertilizante Potássico', categoria:'Fertilizantes', fornecedor:'AgroMax', estado:'MS', quantidade:48, valor:420.00, data:'2025-03-14', estoque:true},
+            {id:25, produto:'Inseticida Ultra', categoria:'Defensivos', fornecedor:'BioPlant', estado:'SP', quantidade:18, valor:890.00, data:'2025-03-16', estoque:false}, // Bloqueado Q10 (>800)
+            {id:26, produto:'Ração Avícola', categoria:'Rações', fornecedor:'NutriCampo', estado:'SC', quantidade:130, valor:89.50, data:'2025-03-18', estoque:true},
+            {id:27, produto:'Milho Orgânico', categoria:'Grãos', fornecedor:'AgroSul', estado:'PR', quantidade:95, valor:110.00, data:'2025-03-20', estoque:true},
+            {id:28, produto:'Adubo Nitrogenado', categoria:'Fertilizantes', fornecedor:'Solo Forte', estado:'GO', quantidade:75, valor:275.00, data:'2025-03-22', estoque:true},
+            {id:29, produto:'Semente de Arroz', categoria:'Sementes', fornecedor:'Campo Verde', estado:'RS', quantidade:60, valor:140.00, data:'2025-03-24', estoque:false},
+            {id:30, produto:'Fungicida Premium', categoria:'Defensivos', fornecedor:'AgroMax', estado:'MT', quantidade:15, valor:950.00, data:'2025-03-26', estoque:false}, // Bloqueado Q10 (>800)
+            {id:31, produto:'Farelo Bovino', categoria:'Rações', fornecedor:'NutriCampo', estado:'MG', quantidade:120, valor:82.30, data:'2025-03-28', estoque:true},
+            {id:32, produto:'Soja Safra 2025', categoria:'Grãos', fornecedor:'Campo Verde', estado:'MS', quantidade:230, valor:150.00, data:'2025-03-30', estoque:false},
+            {id:33, produto:'Calcário Fino', categoria:'Minerais', fornecedor:'Solo Forte', estado:'PR', quantidade:340, valor:42.00, data:'2025-04-01', estoque:true},
+            {id:34, produto:'Herbicida AgroPlus', categoria:'Defensivos', fornecedor:'BioPlant', estado:'GO', quantidade:26, valor:620.00, data:'2025-04-03', estoque:true},
+            {id:35, produto:'Ração Premium Bovina', categoria:'Rações', fornecedor:'NutriCampo', estado:'SC', quantidade:88, valor:145.00, data:'2025-04-05', estoque:false},
+            {id:36, produto:'Semente de Feijão', categoria:'Sementes', fornecedor:'AgroSul', estado:'PR', quantidade:77, valor:115.90, data:'2025-04-07', estoque:true},
+            {id:37, produto:'Milho Tradicional', categoria:'Grãos', fornecedor:'Campo Verde', estado:'MT', quantidade:170, valor:100.00, data:'2025-04-10', estoque:true},
+            {id:38, produto:'Fertilizante Especial', categoria:'Fertilizantes', fornecedor:'AgroMax', estado:'SP', quantidade:54, valor:380.00, data:'2025-04-12', estoque:true},
+            {id:39, produto:'Inseticida Verde', categoria:'Defensivos', fornecedor:'BioPlant', estado:'MS', quantidade:19, valor:720.00, data:'2025-04-15', estoque:false},
+            {id:40, produto:'Sal Mineral Premium', categoria:'Minerais', fornecedor:'Solo Forte', estado:'MG', quantidade:105, valor:92.00, data:'2025-04-18', estoque:true},
+            {id:41, produto:'Ração Ovina', categoria:'Rações', fornecedor:'NutriCampo', estado:'RS', quantidade:66, valor:118.00, data:'2025-04-20', estoque:true},
+            {id:42, produto:'Soja Natural', categoria:'Grãos', fornecedor:'Campo Verde', estado:'GO', quantidade:190, valor:148.00, data:'2025-04-22', estoque:false},
+            {id:43, produto:'Semente Especial', categoria:'Sementes', fornecedor:'AgroSul', estado:'PR', quantidade:59, valor:132.50, data:'2025-04-24', estoque:true},
+            {id:44, produto:'Fungicida Rural', categoria:'Defensivos', fornecedor:'AgroMax', estado:'MT', quantidade:24, valor:845.00, data:'2025-04-26', estoque:false}, // Bloqueado Q10 (>800)
+            {id:45, produto:'Adubo Premium', categoria:'Fertilizantes', fornecedor:'Solo Forte', estado:'SC', quantidade:81, valor:299.90, data:'2025-04-28', estoque:false},
+            {id:46, produto:'Milho Exportação', categoria:'Grãos', fornecedor:'Campo Verde', estado:'MS', quantidade:250, valor:170.00, data:'2025-05-01', estoque:true},
+            {id:47, produto:'Ração Campo Forte', categoria:'Rações', fornecedor:'NutriCampo', estado:'GO', quantidade:74, valor:136.40, data:'2025-05-03', estoque:true},
+            {id:48, produto:'Calcário Rural', categoria:'Minerais', fornecedor:'Solo Forte', estado:'PR', quantidade:330, valor:48.90, data:'2025-05-05', estoque:false},
+            {id:49, produto:'Herbicida Platinum', categoria:'Defensivos', fornecedor:'BioPlant', estado:'SP', quantidade:17, valor:980.00, data:'2025-05-07', estoque:false}, // Bloqueado Q10 (>800)
+            {id:50, produto:'Semente Premium', categoria:'Sementes', fornecedor:'AgroSul', estado:'RS', quantidade:68, valor:155.00, data:'2025-05-10', estoque:true},
+            // Pós-Tratamento Questões 02 a 07:
+            {id:54, produto:'Milho Safrinha', categoria:'Grãos', fornecedor:'AgroSul', estado:'PR', quantidade:95, valor:88.00, data:'2025-05-13', estoque:true},
+            {id:55, produto:'Soja Premium', categoria:'Grãos', fornecedor:'Campo Verde', estado:'MT', quantidade:180, valor:140.00, data:'2025-05-13', estoque:true},
+            {id:56, produto:'Ração Bovina 25kg', categoria:'Rações', fornecedor:'NutriCampo', estado:'SC', quantidade:70, valor:105.00, data:'2025-05-13', estoque:true},
+            {id:57, produto:'Fertilizante NPK', categoria:'Fertilizantes', fornecedor:'AgroMax', estado:'GO', quantidade:45, valor:310.00, data:'2025-05-13', estoque:false},
+            {id:58, produto:'Inseticida Power', categoria:'Defensivos', fornecedor:'Campo Verde', estado:'MT', quantidade:20, valor:580.00, data:'2025-05-13', estoque:true},
+            {id:59, produto:'Milho Híbrido', categoria:'Grãos', fornecedor:'Campo Verde', estado:'MS', quantidade:190, valor:150.00, data:'2025-05-14', estoque:true},
+            {id:60, produto:'Ração Equina', categoria:'Rações', fornecedor:'NutriCampo', estado:'SP', quantidade:38, valor:130.00, data:'2025-05-14', estoque:true},
+            {id:61, produto:'Herbicida Select', categoria:'Defensivos', fornecedor:'BioPlant', estado:'MT', quantidade:27, valor:495.00, data:'2025-05-14', estoque:true},
+            {id:62, produto:'Soja Exportação', categoria:'Grãos', fornecedor:'Campo Verde', estado:'MT', quantidade:250, valor:160.00, data:'2025-05-15', estoque:true},
+            {id:63, produto:'Fungicida Premium', categoria:'Defensivos', fornecedor:'AgroMax', estado:'MT', quantidade:12, valor:950.00, data:'2025-05-15', estoque:false}, // Bloqueado Q10 (>800)
+            {id:64, produto:'Calcário Premium', categoria:'Minerais', fornecedor:'Solo Forte', estado:'PR', quantidade:300, valor:55.50, data:'2025-05-15', estoque:true},
+            {id:65, produto:'Adubo Nitrogenado', categoria:'Fertilizantes', fornecedor:'Solo Forte', estado:'GO', quantidade:70, valor:275.00, data:'2025-05-15', estoque:true},
+            {id:66, produto:'Milho Tradicional', categoria:'Grãos', fornecedor:'Campo Verde', estado:'MT', quantidade:170, valor:100.00, data:'2025-05-16', estoque:true},
+            {id:67, produto:'Ração Ovina', categoria:'Rações', fornecedor:'NutriCampo', estado:'RS', quantidade:66, valor:118.00, data:'2025-05-16', estoque:true},
+            {id:68, produto:'Semente Especial', categoria:'Sementes', fornecedor:'AgroSul', estado:'PR', quantidade:59, valor:132.50, data:'2025-05-16', estoque:true},
+            {id:69, produto:'Herbicida Platinum', categoria:'Defensivos', fornecedor:'BioPlant', estado:'SP', quantidade:17, valor:980.00, data:'2025-05-16', estoque:false}, // Bloqueado Q10 (>800)
+            {id:70, produto:'Milho Exportação', categoria:'Grãos', fornecedor:'Campo Verde', estado:'MS', quantidade:250, valor:170.00, data:'2025-05-17', estoque:true},
+            {id:71, produto:'Ração Campo Forte', categoria:'Rações', fornecedor:'NutriCampo', estado:'GO', quantidade:74, valor:136.40, data:'2025-05-17', estoque:true}
+        ];
+
+        // Dicionário dos 10 KPIs para Modal
+        const kpisDict = {
+            1: {
+                title: "Taxa de Disponibilidade de Produtos",
+                subtitle: "KPI 01 - Tema: Disponibilidade",
+                objective: "Medir que parcela dos registros cadastrados está liberada para comercialização.",
+                formula: "SUM(CASE WHEN estoque = TRUE THEN 1 ELSE 0 END) / COUNT(*) * 100",
+                interpretation: "76,39% dos registros (55 itens) estão disponíveis. Indica um nível saudável de pronta-entrega na base."
+            },
+            2: {
+                title: "Taxa de Indisponibilidade por Categoria",
+                subtitle: "KPI 02 - Tema: Indisponibilidade / Categorias",
+                objective: "Comparar as categorias quanto à proporção de registros sem estoque, apontando a ruptura.",
+                formula: "SUM(CASE WHEN estoque = FALSE THEN 1 ELSE 0 END) / COUNT(categoria) * 100",
+                interpretation: "Defensivos lideram o bloqueio/indisponibilidade (53,85%) devido ao bloqueio estratégico dos itens > R$ 800,00."
+            },
+            3: {
+                title: "Participação das Unidades Disponíveis no Volume Total",
+                subtitle: "KPI 03 - Tema: Estoque e Logística",
+                objective: "Medir, em unidades físicas (não registros), quanto do volume armazenado está liberado.",
+                formula: "SUM(quantidade WHERE estoque=TRUE) / SUM(quantidade Total) * 100",
+                interpretation: "86,48% do volume físico estocado (8.175 unidades de 9.453) está disponível para venda imediata."
+            },
+            4: {
+                title: "Distribuição das Unidades Disponíveis por Estado",
+                subtitle: "KPI 04 - Tema: Estoque e Logística / Regiões",
+                objective: "Identificar onde o volume físico disponível está concentrado para apoio logístico.",
+                formula: "SUM(quantidade estado WHERE estoque=TRUE) / SUM(quantidade total disponivel) * 100",
+                interpretation: "MT (22,63%) e PR (20,67%) concentram juntos 43,30% das unidades disponíveis, exigindo logística focada no Centro-Oeste e Sul."
+            },
+            5: {
+                title: "Valor Potencial do Estoque Disponível",
+                subtitle: "KPI 05 - Tema: Valor Financeiro",
+                objective: "Dimensionar o valor potencial representado pelos produtos liberados para comercialização.",
+                formula: "SUM(quantidade * valor_unitario) WHERE estoque = TRUE",
+                interpretation: "R$ 1.844.757,90 em ativos liberados. Não representa faturamento nem lucro, mas o potencial bruto em estoque."
+            },
+            6: {
+                title: "Concentração do Valor Potencial por Categoria",
+                subtitle: "KPI 06 - Tema: Valor Financeiro / Categorias",
+                objective: "Mostrar quais categorias concentram o maior valor monetário total cadastrado.",
+                formula: "SUM(quantidade * valor_unitario por Categoria) / SUM(Total) * 100",
+                interpretation: "Grãos (R$ 577.865,00) e Defensivos (R$ 380.088,50) concentram a maior parte do valor financeiro estocado."
+            },
+            7: {
+                title: "Concentração dos 3 Maiores Fornecedores",
+                subtitle: "KPI 07 - Tema: Fornecedores",
+                objective: "Avaliar a dependência da empresa em relação aos principais parceiros de suprimentos.",
+                formula: "SUM(registros Top 3 Fornecedores) / COUNT(*) Total * 100",
+                interpretation: "68,06% dos registros pertencem a Campo Verde, NutriCampo e AgroSul, indicando alta dependência comercial nesses 3 parceiros."
+            },
+            8: {
+                title: "Índice de Preço Médio por Fornecedor",
+                subtitle: "KPI 08 - Tema: Fornecedores / Financeiro",
+                objective: "Comparar o ticket médio unitário de cada fornecedor em relação à média geral da base (Base 100 = R$ 286,83).",
+                formula: "(AVG(valor_unitario Fornecedor) / AVG(valor_unitario Geral)) * 100",
+                interpretation: "AgroMax (Índice 237,34) e BioPlant (Índice 230,06) possuem portfólios de alto valor unitário agregado (defensivos e fertilizantes)."
+            },
+            9: {
+                title: "Peso dos Registros de Alto Volume (> 200 un)",
+                subtitle: "KPI 09 - Tema: Estoque e Logística",
+                objective: "Medir quanto do volume físico está concentrado em grandes lotes de estocagem.",
+                formula: "SUM(quantidade > 200) / SUM(quantidade Total) * 100",
+                interpretation: "19,44% dos registros representam 41,89% de todas as unidades estocadas. Alta concentração em itens como Calcário e Soja."
+            },
+            10: {
+                title: "Cobertura Geográfica por Categoria",
+                subtitle: "KPI 10 - Tema: Categorias e Estados",
+                objective: "Verificar a capilaridade de cada categoria nos 8 estados atendidos pela base.",
+                formula: "(COUNT(DISTINCT estado Categoria) / 8 Estados Totais) * 100",
+                interpretation: "Grãos, Rações, Fertilizantes, Defensivos e Sementes atendem 6 dos 8 estados (75% de cobertura), com forte capilaridade regional."
+            }
+        };
+
+        // Instâncias Globais dos Gráficos Chart.js
+        let chartDisp, chartValorCat, chartUnidEst, chartTopForn, chartIndispCat, chartIndicePrc, chartCobertGeo;
+
+        // Inicialização ao carregar página
+        window.onload = function() {
+            renderTable(rawData);
+            initCharts();
+        };
+
+        // Troca de Abas da Sidebar
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-agro-800/80', 'text-white');
+                el.classList.add('text-slate-300');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.add('bg-agro-800/80', 'text-white');
+                activeNav.classList.remove('text-slate-300');
+            }
+
+            // Atualiza o título da topbar
+            const titles = {
+                'visao-geral': 'Painel Executivo de Indicadores',
+                'estoque': 'Análise de Disponibilidade & Estoque Físico',
+                'financeiro': 'Análise Financeira & Potencial de Estoque',
+                'regioes': 'Distribuição por Fornecedores & Regiões',
+                'diretoria': 'Síntese & Conclusão Gerencial para Diretoria'
+            };
+            document.getElementById('page-title').innerText = titles[tabId] || 'Dashboard Executivo';
+        }
+
+        // Renderiza Tabela Dinâmica
+        function renderTable(data) {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            document.getElementById('table-count').innerText = data.length;
+
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition-colors border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3 font-mono text-slate-400">#${item.id}</td>
+                    <td class="p-3 font-semibold text-slate-800">${item.produto}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-medium">${item.categoria}</span></td>
+                    <td class="p-3 text-slate-600">${item.fornecedor}</td>
+                    <td class="p-3 font-bold text-slate-700">${item.estado}</td>
+                    <td class="p-3 text-right font-mono font-medium text-slate-800">${item.quantidade}</td>
+                    <td class="p-3 text-right font-mono font-medium text-slate-800">R$ ${item.valor.toFixed(2)}</td>
+                    <td class="p-3 text-center text-slate-500 font-mono text-[11px]">${item.data}</td>
+                    <td class="p-3 text-center">
+                        ${item.estoque 
+                            ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold"><i class="fa-solid fa-check mr-1"></i>Sim</span>'
+                            : '<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold"><i class="fa-solid fa-xmark mr-1"></i>Não</span>'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Filtro rápido de pesquisa na tabela
+        function filterTable() {
+            const query = document.getElementById('table-search').value.toLowerCase();
+            const cat = document.getElementById('filter-categoria').value;
+            const est = document.getElementById('filter-estado').value;
+
+            const filtered = rawData.filter(item => {
+                const matchesQuery = item.produto.toLowerCase().includes(query) || item.fornecedor.toLowerCase().includes(query);
+                const matchesCat = (cat === 'TODAS' || item.categoria === cat);
+                const matchesEst = (est === 'TODOS' || item.estado === est);
+                return matchesQuery && matchesCat && matchesEst;
+            });
+
+            renderTable(filtered);
+        }
+
+        // Aplica Filtros Globais nos Cards e Gráficos
+        function applyFilters() {
+            const cat = document.getElementById('filter-categoria').value;
+            const est = document.getElementById('filter-estado').value;
+
+            const filtered = rawData.filter(item => {
+                const matchesCat = (cat === 'TODAS' || item.categoria === cat);
+                const matchesEst = (est === 'TODOS' || item.estado === est);
+                return matchesCat && matchesEst;
+            });
+
+            // Atualiza Cards de estatísticas
+            const total = filtered.length;
+            const disp = filtered.filter(i => i.estoque).length;
+            const dispPct = total > 0 ? ((disp / total) * 100).toFixed(2) : '0.00';
+            const valDisp = filtered.filter(i => i.estoque).reduce((acc, i) => acc + (i.quantidade * i.valor), 0);
+            const unidDisp = filtered.filter(i => i.estoque).reduce((acc, i) => acc + i.quantidade, 0);
+
+            document.getElementById('kpi-card-total').innerText = total;
+            document.getElementById('kpi-card-disp').innerText = `${dispPct}%`;
+            document.getElementById('kpi-card-disp-bar').style.width = `${dispPct}%`;
+            document.getElementById('kpi-card-valor').innerText = `R$ ${valDisp.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('kpi-card-unidades').innerText = unidDisp.toLocaleString('pt-BR');
+            document.getElementById('val-disp-qtd').innerText = `${disp} (${dispPct}%)`;
+            document.getElementById('val-indisp-qtd').innerText = `${total - disp} (${(100 - dispPct).toFixed(1)}%)`;
+
+            // Atualiza gráfico de rosca
+            chartDisp.data.datasets[0].data = [disp, total - disp];
+            chartDisp.update();
+
+            filterTable();
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-categoria').value = 'TODAS';
+            document.getElementById('filter-estado').value = 'TODOS';
+            document.getElementById('table-search').value = '';
+            applyFilters();
+        }
+
+        // Inicialização de Gráficos com Chart.js
+        function initCharts() {
+            // Chart 1: Donut Disponibilidade
+            const ctxDisp = document.getElementById('chartDisponibilidade').getContext('2d');
+            chartDisp = new Chart(ctxDisp, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Disponíveis', 'Indisponíveis'],
+                    datasets: [{
+                        data: [55, 17],
+                        backgroundColor: ['#16a34a', '#f43f5e'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 } } } },
+                    cutout: '70%'
+                }
+            });
+
+            // Chart 2: Valor Potencial por Categoria (Barras Horizontais)
+            const ctxValorCat = document.getElementById('chartValorCategoria').getContext('2d');
+            chartValorCat = new Chart(ctxValorCat, {
+                type: 'bar',
+                data: {
+                    labels: ['Grãos', 'Defensivos', 'Fertilizantes', 'Minerais', 'Rações', 'Sementes'],
+                    datasets: [{
+                        label: 'Valor Potencial (R$)',
+                        data: [577865.00, 380088.50, 316972.50, 212457.00, 169647.00, 115993.40],
+                        backgroundColor: '#15803d',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { grid: { display: false } }, y: { grid: { display: false } } }
+                }
+            });
+
+            // Chart 3: Unidades por Estado
+            const ctxUnidEst = document.getElementById('chartUnidadesEstado').getContext('2d');
+            chartUnidEst = new Chart(ctxUnidEst, {
+                type: 'bar',
+                data: {
+                    labels: ['MT', 'PR', 'GO', 'MS', 'RS', 'SC', 'SP', 'MG'],
+                    datasets: [{
+                        label: 'Unidades Disponíveis',
+                        data: [1850, 1690, 1269, 1075, 788, 630, 445, 428],
+                        backgroundColor: '#22c55e',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Chart 4: Top 3 Fornecedores
+            const ctxTopForn = document.getElementById('chartTopFornecedores').getContext('2d');
+            chartTopForn = new Chart(ctxTopForn, {
+                type: 'pie',
+                data: {
+                    labels: ['Campo Verde (23.6%)', 'NutriCampo (22.2%)', 'AgroSul (22.2%)', 'Outros (32.0%)'],
+                    datasets: [{
+                        data: [17, 16, 16, 23],
+                        backgroundColor: ['#14532d', '#15803d', '#22c55e', '#cbd5e1'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
+                }
+            });
+
+            // Chart 5: Indisponibilidade por Categoria (Estoque)
+            const ctxIndispCat = document.getElementById('chartIndisponibilidadeCategoria').getContext('2d');
+            chartIndispCat = new Chart(ctxIndispCat, {
+                type: 'bar',
+                data: {
+                    labels: ['Defensivos', 'Fertilizantes', 'Sementes', 'Grãos', 'Minerais', 'Rações'],
+                    datasets: [{
+                        label: 'Taxa de Indisponibilidade (%)',
+                        data: [53.85, 33.33, 33.33, 20.00, 14.29, 11.11],
+                        backgroundColor: '#f43f5e',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Chart 6: Índice de Preço por Fornecedor
+            const ctxIndicePrc = document.getElementById('chartIndicePreco').getContext('2d');
+            chartIndicePrc = new Chart(ctxIndicePrc, {
+                type: 'bar',
+                data: {
+                    labels: ['AgroMax', 'BioPlant', 'Campo Verde', 'NutriCampo', 'AgroSul', 'Solo Forte'],
+                    datasets: [{
+                        label: 'Índice de Preço (Base 100 = R$ 286,83)',
+                        data: [237.34, 230.06, 85.34, 38.83, 38.64, 34.50],
+                        backgroundColor: '#0284c7',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Chart 7: Cobertura Geográfica
+            const ctxCobertGeo = document.getElementById('chartCoberturaGeo').getContext('2d');
+            chartCobertGeo = new Chart(ctxCobertGeo, {
+                type: 'bar',
+                data: {
+                    labels: ['Grãos', 'Rações', 'Fertilizantes', 'Defensivos', 'Sementes', 'Minerais'],
+                    datasets: [{
+                        label: 'Cobertura Geográfica (%)',
+                        data: [75.0, 75.0, 75.0, 75.0, 75.0, 37.5],
+                        backgroundColor: '#d97706',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { max: 100 } }
+                }
+            });
+        }
+
+        // Modal de Informação dos KPIs
+        function openKpiModal(kpiId) {
+            const data = kpisDict[kpiId];
+            if (!data) return;
+
+            document.getElementById('modal-kpi-num').innerText = `KPI 0${kpiId}`;
+            document.getElementById('modal-kpi-title').innerText = data.title;
+            document.getElementById('modal-kpi-subtitle').innerText = data.subtitle;
+            document.getElementById('modal-kpi-objective').innerText = data.objective;
+            document.getElementById('modal-kpi-formula').innerText = data.formula;
+            document.getElementById('modal-kpi-interpretation').innerText = data.interpretation;
+
+            document.getElementById('kpi-modal').classList.remove('hidden');
+        }
+
+        function closeKpiModal() {
+            document.getElementById('kpi-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
